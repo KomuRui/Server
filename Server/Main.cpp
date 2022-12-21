@@ -8,7 +8,7 @@
 
 #pragma comment( lib, "ws2_32.lib" )
 
-const unsigned short PORT = 8080;	// サーバのポート番号
+const unsigned short PORT = 8080;	//サーバのポート番号
 
 //位置
 struct Position
