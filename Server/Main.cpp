@@ -21,6 +21,7 @@ struct Position
 //送る情報
 struct SendInfo
 {
+    int iD;
     Position pos;
     float axisAngle;
     bool isShot;
@@ -126,15 +127,15 @@ BOOL Receiving(SOCKET sock)
     sprintf_s(portstr, "%d", ntohs(fromAddr.sin_port));
 
     //追加するかどうか
-    bool IsAdd = false;
+    bool IsAdd = true;
 
     //保存しているクライアントの情報とかぶっていなければ情報保存
     for (auto i = ClientInfo.begin(); i != ClientInfo.end(); i++)
     {
-        //もしアドレスとポート番号が違うのなら
-        if ((*i).first.ipAddr != ipAddr && (*i).first.portstr != portstr)
+        //もしアドレスとポート番号が同じなら
+        if (strcmp((*i).first.ipAddr, ipAddr) == 0 && strcmp((*i).first.portstr, portstr) == 0)
         {
-            IsAdd = true;
+            IsAdd = false;
         }
     }
 
@@ -165,6 +166,7 @@ BOOL Receiving(SOCKET sock)
         SendInfo data;
 
         //実際に使うためにバイトオーダーを変換
+        data.iD = ntohl(info.iD);
         data.pos.x = ntohl(info.pos.x);
         data.pos.y = ntohl(info.pos.y);
         data.pos.z = ntohl(info.pos.z);
@@ -182,15 +184,18 @@ BOOL Receiving(SOCKET sock)
 //Playしている時の送信
 BOOL PlaySending(SOCKET sock,SendInfo data, char ipAddr[], char portstr[])
 {
+    int iD = htonl(data.iD);
+
     for (auto i = ClientInfo.begin(); i != ClientInfo.end(); i++)
     {
-        //もしアドレスとポート番号が違うのなら
-        if (strcmp((*i).first.ipAddr, ipAddr) != 0 && strcmp((*i).first.portstr, portstr) != 0)
+        //もしiDが違うのなら
+        if (strcmp((*i).first.ipAddr, ipAddr) != 0 || strcmp((*i).first.portstr, portstr) != 0)
         {
             //変換した構造体を入れるようの変数
             SendInfo sendData;
 
             //バイトオーダー変換
+            sendData.iD = htonl(data.iD);
             sendData.pos.x = htonl(data.pos.x);
             sendData.pos.y = htonl(data.pos.y);
             sendData.pos.z = htonl(data.pos.z);
@@ -198,8 +203,10 @@ BOOL PlaySending(SOCKET sock,SendInfo data, char ipAddr[], char portstr[])
             sendData.isDead = htonl(data.isDead);
             sendData.isShot = htonl(data.isShot);
 
+            auto toAddr = *(i);
+
             //送信
-            sendto(sock, (char*)&sendData, sizeof(sendData), 0, (SOCKADDR*)&(*i).second, sizeof((*i).second));
+            sendto(sock, (char*)&sendData, sizeof(sendData), 0, (SOCKADDR*)&toAddr.second, sizeof(toAddr.second));
         }
     }
 
@@ -233,7 +240,7 @@ BOOL LobySending(SOCKET sock,char ipAddr[], char portstr[])
     auto toAddr = *(ClientInfo.begin() + ID);
 
     //バイトオーダー
-    ID = htonl(ID) + 1;
+    ID = htonl(ID + 1);
 
     //送信
     sendto(sock, (char*)&ID, sizeof(ID), 0, (SOCKADDR*)&toAddr.second, sizeof(toAddr.second));
