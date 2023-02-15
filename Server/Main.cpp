@@ -14,8 +14,11 @@ const unsigned short PORT = 8080;	//サーバのポート番号
 struct Position
 {
     float x;
+    bool minusx;
     float y;
+    bool minusy;
     float z;
+    bool minusz;
 };
 
 //送る情報
@@ -24,6 +27,9 @@ struct SendInfo
     int iD;
     Position pos;
     float axisAngle;
+    bool minus;
+    float axisAngleX;
+    bool minusX;
     bool isShot;
     bool isDead;
 };
@@ -168,9 +174,15 @@ BOOL Receiving(SOCKET sock)
         //実際に使うためにバイトオーダーを変換
         data.iD = ntohl(info.iD);
         data.pos.x = ntohl(info.pos.x);
+        data.pos.minusx = ntohl(info.pos.minusx);
         data.pos.y = ntohl(info.pos.y);
+        data.pos.minusy = ntohl(info.pos.minusy);
         data.pos.z = ntohl(info.pos.z);
+        data.pos.minusz = ntohl(info.pos.minusz);
         data.axisAngle = ntohl(info.axisAngle);
+        data.minus = ntohl(info.minus);
+        data.axisAngleX = ntohl(info.axisAngleX);
+        data.minusX = ntohl(info.minusX);
         data.isDead = ntohl(info.isDead);
         data.isShot = ntohl(info.isShot);
 
@@ -197,9 +209,15 @@ BOOL PlaySending(SOCKET sock,SendInfo data, char ipAddr[], char portstr[])
             //バイトオーダー変換
             sendData.iD = htonl(data.iD);
             sendData.pos.x = htonl(data.pos.x);
+            sendData.pos.minusx = htonl(data.pos.minusx);
             sendData.pos.y = htonl(data.pos.y);
+            sendData.pos.minusy = htonl(data.pos.minusy);
             sendData.pos.z = htonl(data.pos.z);
+            sendData.pos.minusz = htonl(data.pos.minusz);
             sendData.axisAngle = htonl(data.axisAngle);
+            sendData.minus = htonl(data.minus);
+            sendData.axisAngleX = htonl(data.axisAngleX);
+            sendData.minusX = htonl(data.minusX);
             sendData.isDead = htonl(data.isDead);
             sendData.isShot = htonl(data.isShot);
 
